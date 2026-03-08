@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Soft Institute — a taste-led protocol for undervalued meaning." />
+    <title>soft.institute</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <nav class="nav">
+      <div class="nav-group">
+        <button class="nav-btn" id="aboutToggle">About</button>
+        <a href="index.html" class="nav-btn active">soft.institute</a>
+        <a href="shop.html" class="nav-btn">Shop</a>
+        <button class="nav-btn search-btn" id="searchToggle" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Search
+        </button>
+      </div>
+      <div class="about-panel" id="aboutPanel">
+        <h2>Soft Institute</h2>
+        <p>
+          A taste-led protocol for undervalued meaning. Soft Institute produces defended calls: what to make, what form it should take, and what matters (and what doesn't).
+        </p>
+        <p>
+          Not universal. Intentionally partial. Taste-led, accountable to context.
+        </p>
+        <p class="muted">
+          <a href="mailto:hello@soft.institute">hello@soft.institute</a>
+        </p>
+      </div>
+    </nav>
+
+    <main class="catalogue" id="catalogue"></main>
+
+    <script src="images.js"></script>
+    <script>
+      // About toggle
+      const toggle = document.getElementById('aboutToggle');
+      const panel = document.getElementById('aboutPanel');
+      toggle.addEventListener('click', () => {
+        const open = panel.classList.toggle('open');
+        toggle.classList.toggle('about-active', open);
+      });
+      document.addEventListener('click', (e) => {
+        if (!panel.contains(e.target) && e.target !== toggle) {
+          panel.classList.remove('open');
+          toggle.classList.remove('about-active');
+        }
+      });
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      // Classify: portrait < 0.8, landscape > 1.2, square in between
+      function classify(r) {
+        if (r < 0.8) return 'p';
+        if (r > 1.2) return 'l';
+        return 's';
+      }
+
+      // Build a row of 5 with mixed aspect ratios
+      function pickRow(pool) {
+        const byType = { p: [], l: [], s: [] };
+        pool.forEach(img => byType[classify(img[1])].push(img));
+
+        const row = [];
+        // Try to get at least 2 different aspect types per row
+        const types = ['p', 'l', 's'].filter(t => byType[t].length > 0);
+        if (types.length >= 2) {
+          // Pick 2-3 from the most common type, rest from others
+          shuffle(types);
+          const primary = types[0];
+          const others = types.slice(1);
+          const primaryCount = Math.min(3, byType[primary].length);
+          for (let i = 0; i < primaryCount && row.length < 5; i++) {
+            row.push(byType[primary].splice(Math.floor(Math.random() * byType[primary].length), 1)[0]);
+          }
+          for (const t of others) {
+            while (row.length < 5 && byType[t].length > 0) {
+              row.push(byType[t].splice(Math.floor(Math.random() * byType[t].length), 1)[0]);
+            }
+          }
+          // If still not 5, fill from primary
+          while (row.length < 5 && byType[primary].length > 0) {
+            row.push(byType[primary].splice(Math.floor(Math.random() * byType[primary].length), 1)[0]);
+          }
+        } else {
+          // Only one type available, just pick 5
+          const t = types[0] || 'l';
+          while (row.length < 5 && byType[t].length > 0) {
+            row.push(byType[t].splice(Math.floor(Math.random() * byType[t].length), 1)[0]);
+          }
+        }
+
+        // Remove picked from pool
+        const pickedNames = new Set(row.map(r => r[0]));
+        for (let i = pool.length - 1; i >= 0; i--) {
+          if (pickedNames.has(pool[i][0])) pool.splice(i, 1);
+        }
+
+        // Shuffle order within row so types are interleaved
+        shuffle(row);
+        return row;
+      }
+
+      // Track which images are currently displayed so reshuffles pick fresh ones
+      const usedImages = new Set();
+
+      function makeFig(name, rowEl) {
+        const fig = document.createElement('figure');
+        fig.className = 'img-wrap';
+        const img = document.createElement('img');
+        img.src = 'images/all/' + name;
+        img.alt = '';
+        img.loading = 'lazy';
+        const cap = document.createElement('figcaption');
+        cap.textContent = name.replace('.jpg', '');
+        fig.appendChild(img);
+        fig.appendChild(cap);
+        fig.addEventListener('click', () => reshuffleRow(rowEl));
+        return fig;
+      }
+
+      function buildRow(rowEl, animate) {
+        // Release current images back
+        rowEl.querySelectorAll('figcaption').forEach(c => usedImages.delete(c.textContent + '.jpg'));
+
+        // Get pool of unused images
+        let pool = allImages.filter(img => !usedImages.has(img[0]));
+        if (pool.length < 5) {
+          usedImages.clear();
+          pool = [...allImages];
+        }
+        const items = pickRow(pool);
+        items.forEach(([name]) => usedImages.add(name));
+
+        if (!animate) {
+          rowEl.innerHTML = '';
+          items.forEach(([name]) => rowEl.appendChild(makeFig(name, rowEl)));
+          return;
+        }
+
+        // Animate: fade out existing, then add one at a time
+        const existing = [...rowEl.children];
+        const stagger = 80;
+
+        // Fade out all existing
+        existing.forEach((el, i) => {
+          setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'scale(0.95)';
+          }, i * stagger);
+        });
+
+        // After all faded out, clear and add new ones
+        const clearDelay = existing.length * stagger + 150;
+        setTimeout(() => {
+          rowEl.innerHTML = '';
+          items.forEach(([name], i) => {
+            setTimeout(() => {
+              const fig = makeFig(name, rowEl);
+              fig.style.opacity = '0';
+              fig.style.transform = 'scale(0.95)';
+              rowEl.appendChild(fig);
+              // Trigger reflow then animate in
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  fig.style.opacity = '1';
+                  fig.style.transform = 'scale(1)';
+                });
+              });
+            }, i * stagger);
+          });
+        }, clearDelay);
+      }
+
+      function reshuffleRow(rowEl) {
+        buildRow(rowEl, true);
+      }
+
+      const catalogue = document.getElementById('catalogue');
+      const totalRows = 20;
+
+      for (let i = 0; i < totalRows; i++) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        catalogue.appendChild(row);
+        buildRow(row, false);
+      }
+    </script>
+
+  </body>
+</html>
