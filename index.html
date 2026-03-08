@@ -12,17 +12,9 @@
     <nav class="nav">
       <div class="nav-group">
         <button class="nav-btn" id="aboutToggle">About</button>
-        <a href="index.html" class="nav-btn active">soft.institute</a>
-        <a href="shop.html" class="nav-btn">Shop</a>
-        <button class="nav-btn search-btn" id="searchToggle" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          Search
-        </button>
-      </div>
-      <div class="about-panel" id="aboutPanel">
+        <button class="nav-btn active" id="homeBtn">soft.institute</button>
+        <button class="nav-btn" id="shopToggle" disabled>Shop</button>
+        <div class="about-panel" id="aboutPanel">
         <h2>Soft Institute</h2>
         <p>
           A taste-led protocol for undervalued meaning. Soft Institute produces defended calls: what to make, what form it should take, and what matters (and what doesn't).
@@ -34,15 +26,29 @@
           <a href="mailto:hello@soft.institute">hello@soft.institute</a>
         </p>
       </div>
+      </div>
     </nav>
 
     <main class="catalogue" id="catalogue"></main>
 
     <script src="images.js"></script>
     <script>
+      // Products — images that appear in the shop filter
+      const products = new Set([
+        'IMG_5947.jpg',
+        'IMG_7042.jpg',
+        'IMG_7300.jpg',
+        'IMG_6877.jpg'
+      ]);
+
+      let shopMode = false;
+
       // About toggle
       const toggle = document.getElementById('aboutToggle');
       const panel = document.getElementById('aboutPanel');
+      const shopBtn = document.getElementById('shopToggle');
+      const homeBtn = document.getElementById('homeBtn');
+
       toggle.addEventListener('click', () => {
         const open = panel.classList.toggle('open');
         toggle.classList.toggle('about-active', open);
@@ -51,6 +57,24 @@
         if (!panel.contains(e.target) && e.target !== toggle) {
           panel.classList.remove('open');
           toggle.classList.remove('about-active');
+        }
+      });
+
+      // Shop toggle
+      shopBtn.addEventListener('click', () => {
+        shopMode = !shopMode;
+        shopBtn.classList.toggle('active', shopMode);
+        homeBtn.classList.toggle('active', !shopMode);
+        rebuildCatalogue();
+      });
+
+      // Home button
+      homeBtn.addEventListener('click', () => {
+        if (shopMode) {
+          shopMode = false;
+          shopBtn.classList.remove('active');
+          homeBtn.classList.add('active');
+          rebuildCatalogue();
         }
       });
 
@@ -120,29 +144,46 @@
       function makeFig(name, rowEl) {
         const fig = document.createElement('figure');
         fig.className = 'img-wrap';
+        if (products.has(name)) fig.classList.add('product');
         const img = document.createElement('img');
         img.src = 'images/all/' + name;
         img.alt = '';
         img.loading = 'lazy';
-        const cap = document.createElement('figcaption');
-        cap.textContent = name.replace('.jpg', '');
+        const capRow = document.createElement('figcaption');
+        const capName = document.createElement('span');
+        capName.textContent = name.replace('.jpg', '');
+        capRow.appendChild(capName);
+        if (products.has(name)) {
+          const capBuy = document.createElement('span');
+          capBuy.className = 'buy-label';
+          capBuy.textContent = 'BUY';
+          capRow.appendChild(capBuy);
+        }
         fig.appendChild(img);
-        fig.appendChild(cap);
+        fig.appendChild(capRow);
         fig.addEventListener('click', () => reshuffleRow(rowEl));
         return fig;
       }
 
+      function getPool() {
+        let source = shopMode
+          ? allImages.filter(img => products.has(img[0]))
+          : allImages;
+        let pool = source.filter(img => !usedImages.has(img[0]));
+        if (pool.length < (shopMode ? 1 : 5)) {
+          usedImages.clear();
+          pool = [...source];
+        }
+        return pool;
+      }
+
       function buildRow(rowEl, animate) {
         // Release current images back
-        rowEl.querySelectorAll('figcaption').forEach(c => usedImages.delete(c.textContent + '.jpg'));
+        rowEl.querySelectorAll('figcaption span:first-child').forEach(c => usedImages.delete(c.textContent + '.jpg'));
 
-        // Get pool of unused images
-        let pool = allImages.filter(img => !usedImages.has(img[0]));
-        if (pool.length < 5) {
-          usedImages.clear();
-          pool = [...allImages];
-        }
-        const items = pickRow(pool);
+        const pool = getPool();
+        const perRow = shopMode ? Math.min(pool.length, 4) : 5;
+        const items = shopMode ? shuffle([...pool]).slice(0, perRow).map(i => [i[0], i[1]]) : pickRow(pool);
         items.forEach(([name]) => usedImages.add(name));
 
         if (!animate) {
@@ -190,14 +231,20 @@
       }
 
       const catalogue = document.getElementById('catalogue');
-      const totalRows = 20;
 
-      for (let i = 0; i < totalRows; i++) {
-        const row = document.createElement('div');
-        row.className = 'row';
-        catalogue.appendChild(row);
-        buildRow(row, false);
+      function rebuildCatalogue() {
+        usedImages.clear();
+        catalogue.innerHTML = '';
+        const totalRows = shopMode ? 1 : 20;
+        for (let i = 0; i < totalRows; i++) {
+          const row = document.createElement('div');
+          row.className = 'row';
+          catalogue.appendChild(row);
+          buildRow(row, false);
+        }
       }
+
+      rebuildCatalogue();
     </script>
 
   </body>
