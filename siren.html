@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Aotearoa Dub Siren — bird-voiced oscillator prototype by Soft Institute" />
+    <title>Aotearoa Dub Siren — soft.institute</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* ── Siren-specific styles ── */
+      body { background: #111; color: #ddd; }
+
+      .siren-nav .nav-btn { background: #222; border-color: #333; color: #ddd; }
+      .siren-nav .nav-btn.active { border-color: #ddd; }
+      .siren-nav .nav-btn:hover { border-color: #666; }
+
+      .siren-wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 24px 16px 80px;
+      }
+
+      .siren-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .siren-header h1 {
+        font-size: 18px;
+        font-weight: 50;
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+
+      .siren-header p {
+        font-size: 12px;
+        color: #777;
+        line-height: 1.5;
+        max-width: 480px;
+        margin: 0 auto;
+      }
+
+      /* ── Voice selector ── */
+      .voice-selector {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+
+      .voice-btn {
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 50;
+        padding: 6px 14px 4px;
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #888;
+        cursor: pointer;
+        transition: all 0.15s;
+        line-height: 1;
+      }
+
+      .voice-btn:hover { border-color: #666; color: #bbb; }
+
+      .voice-btn.active {
+        border-color: var(--voice-color, #ddd);
+        color: var(--voice-color, #ddd);
+        background: #1e1e1e;
+      }
+
+      .voice-btn[data-voice="fantail"] { --voice-color: #c8b878; }
+      .voice-btn[data-voice="tui"] { --voice-color: #7898c8; }
+      .voice-btn[data-voice="bellbird"] { --voice-color: #78c888; }
+      .voice-btn[data-voice="kereru"] { --voice-color: #b878b8; }
+
+      /* ── Controls grid ── */
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 20px 16px;
+        margin-bottom: 28px;
+      }
+
+      .control {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .control label {
+        font-size: 10px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .control input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 3px;
+        background: #333;
+        border-radius: 2px;
+        outline: none;
+      }
+
+      .control input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        border: none;
+      }
+
+      .control input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ddd;
+        cursor: pointer;
+        border: none;
+      }
+
+      .control .val {
+        font-size: 11px;
+        color: #555;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      /* ── Play button ── */
+      .play-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .play-btn {
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 50;
+        padding: 8px 28px 6px;
+        background: #1a1a1a;
+        border: 1px solid #555;
+        border-radius: 4px;
+        color: #ddd;
+        cursor: pointer;
+        transition: all 0.15s;
+        line-height: 1;
+      }
+
+      .play-btn:hover { border-color: #999; }
+      .play-btn.active { border-color: #fff; color: #fff; }
+
+      /* ── Scope (waveform visualiser) ── */
+      .scope-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 28px;
+      }
+
+      canvas#scope {
+        width: 100%;
+        max-width: 820px;
+        height: 120px;
+        background: #0a0a0a;
+        border: 1px solid #222;
+        border-radius: 4px;
+      }
+
+      /* ── Circuit diagram ── */
+      .circuit-info {
+        border-top: 1px solid #222;
+        padding-top: 20px;
+        margin-top: 12px;
+      }
+
+      .circuit-info h2 {
+        font-size: 12px;
+        font-weight: 50;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+      }
+
+      .circuit-path {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.8;
+        font-family: inherit;
+      }
+
+      .circuit-path .node {
+        color: #999;
+        border: 1px solid #333;
+        padding: 2px 6px;
+        border-radius: 3px;
+        white-space: nowrap;
+      }
+
+      .circuit-path .arrow { color: #444; margin: 0 2px; }
+
+      .voice-desc {
+        margin-top: 16px;
+        font-size: 12px;
+        color: #555;
+        line-height: 1.6;
+      }
+
+      .voice-desc strong { color: #777; font-weight: 50; }
+
+      /* ── Responsive ── */
+      @media (max-width: 600px) {
+        .controls { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+        .siren-header h1 { font-size: 16px; }
+        canvas#scope { height: 80px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav class="nav siren-nav">
+      <div class="nav-group">
+        <a class="nav-btn" href="index.html">soft.institute</a>
+        <span class="nav-btn active">Siren</span>
+      </div>
+    </nav>
+
+    <div class="siren-wrap">
+
+      <div class="siren-header">
+        <h1>Aotearoa Dub Siren</h1>
+        <p>Four oscillator voices modeled on the acoustic production of native New Zealand birds. A faithful evolution of the Jamaican dub siren — same signal path, new tongues.</p>
+      </div>
+
+      <!-- Voice selector -->
+      <div class="voice-selector">
+        <button class="voice-btn active" data-voice="fantail">Pīwakawaka</button>
+        <button class="voice-btn" data-voice="tui">Tūī</button>
+        <button class="voice-btn" data-voice="bellbird">Korimako</button>
+        <button class="voice-btn" data-voice="kereru">Kererū</button>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="control">
+          <label>Pitch</label>
+          <input type="range" id="pitch" min="0" max="1" step="0.001" value="0.4" />
+          <span class="val" id="pitchVal">—</span>
+        </div>
+        <div class="control">
+          <label>LFO Rate</label>
+          <input type="range" id="lfoRate" min="0" max="1" step="0.001" value="0.2" />
+          <span class="val" id="lfoRateVal">—</span>
+        </div>
+        <div class="control">
+          <label>LFO Depth</label>
+          <input type="range" id="lfoDepth" min="0" max="1" step="0.001" value="0.3" />
+          <span class="val" id="lfoDepthVal">—</span>
+        </div>
+        <div class="control">
+          <label>Delay Time</label>
+          <input type="range" id="delayTime" min="0" max="1" step="0.001" value="0.4" />
+          <span class="val" id="delayTimeVal">—</span>
+        </div>
+        <div class="control">
+          <label>Feedback</label>
+          <input type="range" id="feedback" min="0" max="1" step="0.001" value="0.5" />
+          <span class="val" id="feedbackVal">—</span>
+        </div>
+        <div class="control">
+          <label>Tone</label>
+          <input type="range" id="tone" min="0" max="1" step="0.001" value="0.6" />
+          <span class="val" id="toneVal">—</span>
+        </div>
+      </div>
+
+      <!-- Play -->
+      <div class="play-row">
+        <button class="play-btn" id="playBtn">Play</button>
+      </div>
+
+      <!-- Scope -->
+      <div class="scope-wrap">
+        <canvas id="scope"></canvas>
+      </div>
+
+      <!-- Circuit info -->
+      <div class="circuit-info">
+        <h2>Signal Path</h2>
+        <div class="circuit-path">
+          <span class="node">Bird Voice</span>
+          <span class="arrow">→</span>
+          <span class="node">VCA</span>
+          <span class="arrow">→</span>
+          <span class="node">Tape Delay</span>
+          <span class="arrow">→</span>
+          <span class="node">HP Cut</span>
+          <span class="arrow">→</span>
+          <span class="node">Output</span>
+        </div>
+        <div class="voice-desc" id="voiceDesc"></div>
+      </div>
+
+    </div>
+
+    <script>
+    (() => {
+      'use strict';
+
+      // ── Voice descriptions (circuit documentation) ──
+      const voiceInfo = {
+        fantail: '<strong>Pīwakawaka — Fantail.</strong> Single sine oscillator with rapid pitch sequencer. Staircase-descending pattern of 6–10 steps, each note a short percussive chirp (3ms attack, 50ms decay). Micro pitch-sweep upward within each note (~500Hz). Models the fantail\'s silvery cascading call. Frequency range: 2500–6000 Hz.',
+        tui: '<strong>Tūī.</strong> Dual independent oscillators modeling the tūī\'s dual syrinx. Fed through a ring modulator to produce the characteristic metallic/bell timbre. FM cross-modulation between oscillators. Rapid pitch glides covering 1–4 kHz. The two voices can beat against each other at close intervals. Frequency range: 300–8000+ Hz.',
+        bellbird: '<strong>Korimako — Bellbird.</strong> Pure sine oscillator with low-index FM synthesis (integer-ratio modulator) for bell-like harmonic shimmer. Gentle vibrato at 5–10 Hz. Smooth descending pitch glide across each note. The most tonal and melodic voice — Captain Cook\'s crew described the dawn chorus as "small bells exquisitely tuned." Frequency range: 1000–5000 Hz.',
+        kereru: '<strong>Kererū — NZ Wood Pigeon.</strong> Filtered noise source (low-pass white noise, cutoff ~1 kHz) models the wing-beat display flight. Amplitude LFO at 5–8 Hz creates the rhythmic whooshing. Sub-oscillator sine at ~350 Hz for the rare vocal coo. The only voice whose primary sound is mechanical rather than vocal. Frequency range: 100–2000 Hz.'
+      };
+
+      // ── State ──
+      let currentVoice = 'fantail';
+      let playing = false;
+      let ctx = null;
+      let masterGain = null;
+      let analyser = null;
+      let delayNode = null;
+      let feedbackGain = null;
+      let delayFilter = null;
+      let voiceNodes = null; // current voice's active nodes
+
+      // ── DOM refs ──
+      const pitchEl = document.getElementById('pitch');
+      const lfoRateEl = document.getElementById('lfoRate');
+      const lfoDepthEl = document.getElementById('lfoDepth');
+      const delayTimeEl = document.getElementById('delayTime');
+      const feedbackEl = document.getElementById('feedback');
+      const toneEl = document.getElementById('tone');
+      const playBtn = document.getElementById('playBtn');
+      const canvas = document.getElementById('scope');
+      const scopeCtx = canvas.getContext('2d');
+      const voiceDescEl = document.getElementById('voiceDesc');
+
+      // ── Voice buttons ──
+      document.querySelectorAll('.voice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelector('.voice-btn.active')?.classList.remove('active');
+          btn.classList.add('active');
+          currentVoice = btn.dataset.voice;
+          voiceDescEl.innerHTML = voiceInfo[currentVoice];
+          if (playing) { stopVoice(); startVoice(); }
+        });
+      });
+
+      // Init description
+      voiceDescEl.innerHTML = voiceInfo[currentVoice];
+
+      // ── Parameter mapping helpers ──
+      function mapPitch(norm) {
+        // Voice-specific frequency mapping
+        const ranges = {
+          fantail:  [2500, 6000],
+          tui:      [300, 6000],
+          bellbird: [1000, 5000],
+          kereru:   [100, 800]
+        };
+        const [lo, hi] = ranges[currentVoice];
+        return lo * Math.pow(hi / lo, norm);
+      }
+
+      function mapLfoRate(norm) { return 0.5 + norm * 14.5; }
+      function mapLfoDepth(norm) { return norm * norm * 2400; } // Hz deviation
+      function mapDelayTime(norm) { return 0.15 + norm * 0.45; }
+      function mapFeedback(norm) { return norm * 0.84; }
+      function mapTone(norm) { return 400 + norm * 7600; } // delay filter cutoff
+
+      // ── Display values ──
+      function updateDisplays() {
+        document.getElementById('pitchVal').textContent = Math.round(mapPitch(pitchEl.value)) + ' Hz';
+        document.getElementById('lfoRateVal').textContent = mapLfoRate(lfoRateEl.value).toFixed(1) + ' Hz';
+        document.getElementById('lfoDepthVal').textContent = Math.round(mapLfoDepth(lfoDepthEl.value)) + ' Hz';
+        document.getElementById('delayTimeVal').textContent = Math.round(mapDelayTime(delayTimeEl.value) * 1000) + ' ms';
+        document.getElementById('feedbackVal').textContent = Math.round(mapFeedback(feedbackEl.value) * 100) + '%';
+        document.getElementById('toneVal').textContent = (mapTone(toneEl.value) / 1000).toFixed(1) + ' kHz';
+      }
+      [pitchEl, lfoRateEl, lfoDepthEl, delayTimeEl, feedbackEl, toneEl].forEach(el => {
+        el.addEventListener('input', () => {
+          updateDisplays();
+          if (playing) updateParams();
+        });
+      });
+      updateDisplays();
+
+      // ── Audio context setup ──
+      function ensureContext() {
+        if (ctx) return;
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        masterGain = ctx.createGain();
+        masterGain.gain.value = 0.35;
+
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+
+        // Delay chain: delay → filter → feedback → delay, and delay → master
+        delayNode = ctx.createDelay(1.0);
+        feedbackGain = ctx.createGain();
+        delayFilter = ctx.createBiquadFilter();
+        delayFilter.type = 'lowpass';
+
+        delayNode.connect(delayFilter);
+        delayFilter.connect(feedbackGain);
+        feedbackGain.connect(delayNode);
+        delayNode.connect(masterGain);
+
+        masterGain.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        drawScope();
+      }
+
+      // ── Update live parameters ──
+      function updateParams() {
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        delayNode.delayTime.setTargetAtTime(mapDelayTime(delayTimeEl.value), t, 0.05);
+        feedbackGain.gain.setTargetAtTime(mapFeedback(feedbackEl.value), t, 0.05);
+        delayFilter.frequency.setTargetAtTime(mapTone(toneEl.value), t, 0.05);
+
+        // Voice-specific parameter updates
+        if (voiceNodes && voiceNodes.update) {
+          voiceNodes.update();
+        }
+      }
+
+      // ── FANTAIL voice ──
+      // Rapid pitch-stepped sequencer with percussive chirps
+      function createFantail() {
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 0.6;
+        dryGain.connect(masterGain);
+        dryGain.connect(delayNode);
+
+        let osc = null;
+        let ampEnv = null;
+        let intervalId = null;
+        let stepIndex = 0;
+
+        function chirp() {
+          const baseFreq = mapPitch(pitchEl.value);
+          const lfoDepth = mapLfoDepth(lfoDepthEl.value);
+          const numSteps = 8;
+          const t = ctx.currentTime;
+
+          // Descending staircase with slight randomness
+          const stepFreq = baseFreq + lfoDepth * (1 - stepIndex / numSteps) * (0.85 + Math.random() * 0.3);
+
+          // Create a short chirp oscillator
+          const chirpOsc = ctx.createOscillator();
+          chirpOsc.type = 'sine';
+          chirpOsc.frequency.setValueAtTime(stepFreq, t);
+          // Upward micro-sweep within note
+          chirpOsc.frequency.linearRampToValueAtTime(stepFreq + 400 + Math.random() * 200, t + 0.05);
+
+          const chirpGain = ctx.createGain();
+          chirpGain.gain.setValueAtTime(0, t);
+          chirpGain.gain.linearRampToValueAtTime(0.7, t + 0.003); // 3ms attack
+          chirpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06); // fast decay
+
+          chirpOsc.connect(chirpGain);
+          chirpGain.connect(dryGain);
+
+          chirpOsc.start(t);
+          chirpOsc.stop(t + 0.08);
+
+          stepIndex = (stepIndex + 1) % numSteps;
+        }
+
+        // Schedule chirps at variable rate based on LFO rate control
+        function scheduleLoop() {
+          const rate = mapLfoRate(lfoRateEl.value);
+          // Rate controls how fast the sequence plays (6-12 chirps/sec)
+          const interval = 1000 / (4 + rate * 0.6);
+          chirp();
+          intervalId = setTimeout(scheduleLoop, interval);
+        }
+
+        scheduleLoop();
+
+        return {
+          update() {},
+          stop() {
+            if (intervalId) clearTimeout(intervalId);
+            dryGain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+            setTimeout(() => { try { dryGain.disconnect(); } catch(e) {} }, 200);
+          }
+        };
+      }
+
+      // ── TŪĪ voice ──
+      // Dual oscillators + ring modulation for metallic dual-syrinx timbre
+      function createTui() {
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 0.4;
+        dryGain.connect(masterGain);
+        dryGain.connect(delayNode);
+
+        const baseFreq = mapPitch(pitchEl.value);
+
+        // Oscillator 1 (left syrinx)
+        const osc1 = ctx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.value = baseFreq;
+
+        // Oscillator 2 (right syrinx) — slightly detuned for beating
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'sawtooth';
+        osc2.frequency.value = baseFreq * 1.015; // ~26 cent detune for beating
+
+        // Ring modulation: multiply the two signals
+        // Use a gain node driven by osc2 to modulate osc1's amplitude
+        const ringGain = ctx.createGain();
+        ringGain.gain.value = 0; // Will be modulated by osc2
+        osc1.connect(ringGain);
+
+        // Create a gain for the ring mod carrier
+        const ringMod = ctx.createGain();
+        ringMod.gain.value = 0.5;
+        osc2.connect(ringMod);
+        ringMod.connect(ringGain.gain); // osc2 modulates the gain of osc1
+
+        // Also mix osc2 directly for dual-voice character
+        const osc2Gain = ctx.createGain();
+        osc2Gain.gain.value = 0.3;
+        osc2.connect(osc2Gain);
+
+        // LFO for pitch sweep (the dramatic tūī glides)
+        const lfo = ctx.createOscillator();
+        lfo.type = 'triangle';
+        lfo.frequency.value = mapLfoRate(lfoRateEl.value);
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = mapLfoDepth(lfoDepthEl.value);
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
+
+        // FM cross-modulation: osc2 modulates osc1 frequency for metallic timbre
+        const fmGain = ctx.createGain();
+        fmGain.gain.value = baseFreq * 0.4; // moderate FM index
+        osc2.connect(fmGain);
+        fmGain.connect(osc1.frequency);
+
+        ringGain.connect(dryGain);
+        osc2Gain.connect(dryGain);
+
+        osc1.start();
+        osc2.start();
+        lfo.start();
+
+        return {
+          update() {
+            const t = ctx.currentTime;
+            const f = mapPitch(pitchEl.value);
+            osc1.frequency.setTargetAtTime(f, t, 0.08);
+            osc2.frequency.setTargetAtTime(f * 1.015, t, 0.08);
+            lfo.frequency.setTargetAtTime(mapLfoRate(lfoRateEl.value), t, 0.05);
+            lfoGain.gain.setTargetAtTime(mapLfoDepth(lfoDepthEl.value), t, 0.05);
+            fmGain.gain.setTargetAtTime(f * 0.4, t, 0.08);
+          },
+          stop() {
+            dryGain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+            setTimeout(() => {
+              try { osc1.stop(); osc2.stop(); lfo.stop(); } catch(e) {}
+              try { dryGain.disconnect(); } catch(e) {}
+            }, 200);
+          }
+        };
+      }
+
+      // ── BELLBIRD voice ──
+      // Pure sine + low-index FM for bell shimmer, gentle vibrato
+      function createBellbird() {
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 0.5;
+        dryGain.connect(masterGain);
+        dryGain.connect(delayNode);
+
+        const baseFreq = mapPitch(pitchEl.value);
+
+        // Carrier oscillator (pure sine)
+        const carrier = ctx.createOscillator();
+        carrier.type = 'sine';
+        carrier.frequency.value = baseFreq;
+
+        // FM modulator (integer ratio for bell harmonics)
+        const modulator = ctx.createOscillator();
+        modulator.type = 'sine';
+        modulator.frequency.value = baseFreq * 2; // 2:1 ratio — octave harmonic
+        const fmGain = ctx.createGain();
+        // Low modulation index for subtle shimmer
+        fmGain.gain.value = baseFreq * 0.15;
+        modulator.connect(fmGain);
+        fmGain.connect(carrier.frequency);
+
+        // Vibrato (5-10 Hz, gentle)
+        const vibrato = ctx.createOscillator();
+        vibrato.type = 'sine';
+        vibrato.frequency.value = 7;
+        const vibratoGain = ctx.createGain();
+        vibratoGain.gain.value = 40; // 40Hz deviation — subtle
+        vibrato.connect(vibratoGain);
+        vibratoGain.connect(carrier.frequency);
+
+        // Siren LFO (pitch sweep)
+        const lfo = ctx.createOscillator();
+        lfo.type = 'triangle';
+        lfo.frequency.value = mapLfoRate(lfoRateEl.value);
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = mapLfoDepth(lfoDepthEl.value);
+        lfo.connect(lfoGain);
+        lfoGain.connect(carrier.frequency);
+        // Also modulate the FM modulator to keep ratio
+        const lfoGain2 = ctx.createGain();
+        lfoGain2.gain.value = mapLfoDepth(lfoDepthEl.value) * 2;
+        lfo.connect(lfoGain2);
+        lfoGain2.connect(modulator.frequency);
+
+        // Gentle amplitude envelope — slight swell
+        const ampEnv = ctx.createGain();
+        ampEnv.gain.setValueAtTime(0, ctx.currentTime);
+        ampEnv.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.015); // 15ms attack
+        ampEnv.gain.setTargetAtTime(0.6, ctx.currentTime + 0.015, 0.4); // sustain with gentle decay
+
+        carrier.connect(ampEnv);
+        ampEnv.connect(dryGain);
+
+        carrier.start();
+        modulator.start();
+        vibrato.start();
+        lfo.start();
+
+        return {
+          update() {
+            const t = ctx.currentTime;
+            const f = mapPitch(pitchEl.value);
+            carrier.frequency.setTargetAtTime(f, t, 0.1);
+            modulator.frequency.setTargetAtTime(f * 2, t, 0.1);
+            fmGain.gain.setTargetAtTime(f * 0.15, t, 0.1);
+            lfo.frequency.setTargetAtTime(mapLfoRate(lfoRateEl.value), t, 0.05);
+            lfoGain.gain.setTargetAtTime(mapLfoDepth(lfoDepthEl.value), t, 0.05);
+            lfoGain2.gain.setTargetAtTime(mapLfoDepth(lfoDepthEl.value) * 2, t, 0.05);
+          },
+          stop() {
+            dryGain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+            setTimeout(() => {
+              try { carrier.stop(); modulator.stop(); vibrato.stop(); lfo.stop(); } catch(e) {}
+              try { dryGain.disconnect(); } catch(e) {}
+            }, 200);
+          }
+        };
+      }
+
+      // ── KERERŪ voice ──
+      // Filtered noise (wingbeat) + sub sine (coo), amplitude LFO
+      function createKereru() {
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 0.6;
+        dryGain.connect(masterGain);
+        dryGain.connect(delayNode);
+
+        // White noise source
+        const bufferSize = ctx.sampleRate * 2;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        noise.loop = true;
+
+        // Low-pass filter (models wing/feather filtering)
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'lowpass';
+        noiseFilter.frequency.value = mapPitch(pitchEl.value) * 1.5;
+        noiseFilter.Q.value = 2;
+
+        // Bandpass for resonant body
+        const bodyFilter = ctx.createBiquadFilter();
+        bodyFilter.type = 'bandpass';
+        bodyFilter.frequency.value = mapPitch(pitchEl.value);
+        bodyFilter.Q.value = 3;
+
+        noise.connect(noiseFilter);
+        noiseFilter.connect(bodyFilter);
+
+        // Wingbeat amplitude LFO (5-8 Hz)
+        const wingLfo = ctx.createOscillator();
+        wingLfo.type = 'sine';
+        wingLfo.frequency.value = 6;
+        const wingLfoGain = ctx.createGain();
+        wingLfoGain.gain.value = 0.5;
+        wingLfo.connect(wingLfoGain);
+
+        const wingAmp = ctx.createGain();
+        wingAmp.gain.value = 0.5;
+        wingLfoGain.connect(wingAmp.gain);
+        bodyFilter.connect(wingAmp);
+
+        // Sub-sine oscillator (the coo)
+        const subOsc = ctx.createOscillator();
+        subOsc.type = 'sine';
+        subOsc.frequency.value = Math.min(mapPitch(pitchEl.value), 400);
+        const subGain = ctx.createGain();
+        subGain.gain.value = 0.35;
+        subOsc.connect(subGain);
+
+        // Siren LFO on the sub osc and noise filter
+        const lfo = ctx.createOscillator();
+        lfo.type = 'triangle';
+        lfo.frequency.value = mapLfoRate(lfoRateEl.value);
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = mapLfoDepth(lfoDepthEl.value) * 0.3; // gentler for low freq
+        lfo.connect(lfoGain);
+        lfoGain.connect(subOsc.frequency);
+        lfoGain.connect(noiseFilter.frequency);
+
+        wingAmp.connect(dryGain);
+        subGain.connect(dryGain);
+
+        noise.start();
+        subOsc.start();
+        wingLfo.start();
+        lfo.start();
+
+        return {
+          update() {
+            const t = ctx.currentTime;
+            const f = mapPitch(pitchEl.value);
+            noiseFilter.frequency.setTargetAtTime(f * 1.5, t, 0.1);
+            bodyFilter.frequency.setTargetAtTime(f, t, 0.1);
+            subOsc.frequency.setTargetAtTime(Math.min(f, 400), t, 0.1);
+            // Wing rate controlled by LFO rate knob
+            wingLfo.frequency.setTargetAtTime(4 + mapLfoRate(lfoRateEl.value) * 0.5, t, 0.05);
+            lfo.frequency.setTargetAtTime(mapLfoRate(lfoRateEl.value) * 0.3, t, 0.05);
+            lfoGain.gain.setTargetAtTime(mapLfoDepth(lfoDepthEl.value) * 0.3, t, 0.05);
+          },
+          stop() {
+            dryGain.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+            setTimeout(() => {
+              try { noise.stop(); subOsc.stop(); wingLfo.stop(); lfo.stop(); } catch(e) {}
+              try { dryGain.disconnect(); } catch(e) {}
+            }, 300);
+          }
+        };
+      }
+
+      // ── Voice factory ──
+      const voiceFactory = { fantail: createFantail, tui: createTui, bellbird: createBellbird, kereru: createKereru };
+
+      function startVoice() {
+        updateParams();
+        voiceNodes = voiceFactory[currentVoice]();
+      }
+
+      function stopVoice() {
+        if (voiceNodes) {
+          voiceNodes.stop();
+          voiceNodes = null;
+        }
+      }
+
+      // ── Play/Stop ──
+      playBtn.addEventListener('click', () => {
+        ensureContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        if (playing) {
+          stopVoice();
+          playing = false;
+          playBtn.textContent = 'Play';
+          playBtn.classList.remove('active');
+        } else {
+          // Set delay params before starting voice
+          delayNode.delayTime.value = mapDelayTime(delayTimeEl.value);
+          feedbackGain.gain.value = mapFeedback(feedbackEl.value);
+          delayFilter.frequency.value = mapTone(toneEl.value);
+
+          startVoice();
+          playing = true;
+          playBtn.textContent = 'Stop';
+          playBtn.classList.add('active');
+        }
+      });
+
+      // ── Oscilloscope ──
+      function drawScope() {
+        if (!analyser) return;
+        requestAnimationFrame(drawScope);
+
+        const w = canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
+        const h = canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1);
+
+        const bufLen = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufLen);
+        analyser.getByteTimeDomainData(dataArray);
+
+        scopeCtx.fillStyle = '#0a0a0a';
+        scopeCtx.fillRect(0, 0, w, h);
+
+        // Center line
+        scopeCtx.strokeStyle = '#1a1a1a';
+        scopeCtx.lineWidth = 1;
+        scopeCtx.beginPath();
+        scopeCtx.moveTo(0, h / 2);
+        scopeCtx.lineTo(w, h / 2);
+        scopeCtx.stroke();
+
+        // Waveform
+        scopeCtx.strokeStyle = playing ? '#ddd' : '#333';
+        scopeCtx.lineWidth = 1.5;
+        scopeCtx.beginPath();
+
+        const sliceWidth = w / bufLen;
+        let x = 0;
+        for (let i = 0; i < bufLen; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * h / 2;
+          if (i === 0) scopeCtx.moveTo(x, y);
+          else scopeCtx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        scopeCtx.stroke();
+      }
+
+      // ── Keyboard shortcut: space to toggle ──
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target === document.body) {
+          e.preventDefault();
+          playBtn.click();
+        }
+      });
+
+    })();
+    </script>
+
+  </body>
+</html>
