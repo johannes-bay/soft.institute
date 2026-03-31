@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Native herb pet-nat wine — soft.institute" />
+    <title>Wine — soft.institute</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .wine-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+      .wine-page h1 {
+        font-size: 22px;
+        font-weight: normal;
+        margin-bottom: 4px;
+        letter-spacing: -0.01em;
+      }
+      .wine-page .subtitle {
+        font-size: 14px;
+        color: rgba(0,0,0,0.5);
+        margin-bottom: 32px;
+      }
+      .wine-page h2 {
+        font-size: 16px;
+        font-weight: normal;
+        margin-top: 36px;
+        margin-bottom: 12px;
+        letter-spacing: -0.01em;
+      }
+      .wine-page p, .wine-page li {
+        font-size: 15px;
+        line-height: 1.6;
+        color: rgba(0,0,0,0.72);
+      }
+      .wine-page p {
+        margin-bottom: 12px;
+      }
+      .wine-page ul {
+        list-style: none;
+        margin-bottom: 16px;
+      }
+      .wine-page li {
+        padding-left: 0;
+        margin-bottom: 8px;
+      }
+      .wine-page li::before {
+        content: "- ";
+      }
+      .wine-entry {
+        margin-bottom: 28px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+      }
+      .wine-entry:last-child {
+        border-bottom: none;
+      }
+      .wine-entry h3 {
+        font-size: 15px;
+        font-weight: normal;
+        margin-bottom: 2px;
+      }
+      .wine-entry .detail {
+        font-size: 13px;
+        color: rgba(0,0,0,0.45);
+        margin-bottom: 8px;
+      }
+      .herb-list {
+        font-size: 13px;
+        color: rgba(0,0,0,0.55);
+        margin-bottom: 6px;
+        font-style: italic;
+      }
+      .wine-page a {
+        color: inherit;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(0,0,0,0.3);
+      }
+      .wine-page a:hover {
+        border-bottom-color: rgba(0,0,0,0.6);
+      }
+      .wine-page .muted {
+        color: rgba(0,0,0,0.5);
+        font-size: 14px;
+      }
+      .section-note {
+        font-size: 13px;
+        color: rgba(0,0,0,0.45);
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav class="nav">
+      <div class="nav-group">
+        <button class="nav-btn" id="aboutToggle">About</button>
+        <a href="index.html" class="nav-btn">soft.institute</a>
+        <a href="shop.html" class="nav-btn">Shop</a>
+        <a href="wine.html" class="nav-btn active">Wine</a>
+        <div class="about-panel" id="aboutPanel">
+          <h2>Soft Institute</h2>
+          <p>
+            A taste-led protocol for undervalued meaning. Soft Institute produces defended calls: what to make, what form it should take, and what matters (and what doesn't).
+          </p>
+          <p>
+            Not universal. Intentionally partial. Taste-led, accountable to context.
+          </p>
+          <p class="muted">
+            <a href="mailto:hello@soft.institute">hello@soft.institute</a>
+          </p>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      const toggle = document.getElementById('aboutToggle');
+      const panel = document.getElementById('aboutPanel');
+      toggle.addEventListener('click', () => {
+        const open = panel.classList.toggle('open');
+        toggle.classList.toggle('about-active', open);
+      });
+      document.addEventListener('click', (e) => {
+        if (!panel.contains(e.target) && e.target !== toggle) {
+          panel.classList.remove('open');
+          toggle.classList.remove('about-active');
+        }
+      });
+    </script>
+
+    <div class="wine-page">
+      <h1>Wine</h1>
+      <p class="subtitle">Native herb pet-nat. Nelson/Tasman.</p>
+
+      <p>
+        Pet-nat (petillant naturel) bottled during primary fermentation with native Aotearoa herb tea infusions. Each wine is rectified with a tea brewed from plants found in the Nelson/Tasman ngahere.
+      </p>
+
+      <h2>Made</h2>
+
+      <div class="wine-entry">
+        <h3>Kawakawa Sauvignon Blanc</h3>
+        <p class="herb-list">Kawakawa leaf</p>
+        <p class="detail">Pet-nat. Sauvignon Blanc base.</p>
+        <p>Warming pepper-spice from the kawakawa against Sauvignon's green citrus. The holey leaves carry the most medicine. Kawakawa is the NZ pepper tree — Piper excelsum — same family as kava. The tea is lightly spicy, invigorating, herbal.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Kanuka Chardonnay/Pinot Noir</h3>
+        <p class="herb-list">Kanuka bark, needles, wood</p>
+        <p class="detail">Pet-nat. Chardonnay/Pinot Noir base.</p>
+        <p>Kanuka is at its most abundant near Nelson — found north of the Buller and Wairau rivers. Floral, uplifting, aromatic. The bark and wood add tannic structure; the needles bring essential oil fragrance. Captain Cook's tea tree.</p>
+      </div>
+
+      <h2>Next</h2>
+
+      <div class="wine-entry">
+        <h3>Pinot Noir / Pinot Gris Light Red</h3>
+        <p class="detail">Pet-nat. Pinot Noir, Pinot Gris, Sauvignon Blanc for sugar.</p>
+        <p>A light red — the Pinot Noir and Pinot Gris for colour and body, the Sauvignon Blanc for residual sugar to drive the secondary fermentation. Considering several native herb teas for this blend:</p>
+      </div>
+
+      <h2>Nelson/Tasman Herbs</h2>
+      <p class="section-note">Plants found locally. Ranked by hot infusion quality.</p>
+
+      <div class="wine-entry">
+        <h3>Kawakawa</h3>
+        <p class="herb-list">Piper excelsum. Leaf.</p>
+        <p>The essential NZ bush tea. Warming, spicy, peppery, herbal. The leaves with the most caterpillar holes have the highest concentration of active compounds. Simmer 15 minutes or steep 3 minutes for a lighter brew. Pairs with ginger, lemon, manuka honey. Nelson is within its South Island range — it extends south to Banks Peninsula. Frost-sensitive, so best from coastal and lowland sites.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Manuka</h3>
+        <p class="herb-list">Leptospermum scoparium. Leaf, bark, wood.</p>
+        <p>Bitter, aromatic, earthy, floral. The leaf contains the same essential oils as manuka honey. Decoct several minutes on the boil for full flavour — don't over-steep or bitterness dominates. Bark decoction (boiled 15-30 minutes) is deeper, more sedative, less bitter than leaf. Abundant throughout Nelson/Tasman from lowland to 1800m. Kanuka's bolder, more tannic cousin.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Kanuka</h3>
+        <p class="herb-list">Kunzea ericoides. Leaf, bark, wood.</p>
+        <p>Floral, uplifting. Most common near Nelson — this is its heartland. Only found north of the Buller and Wairau rivers. Slightly less bitter than manuka. Produces some of the finest native teas. You know this one already.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Horopito</h3>
+        <p class="herb-list">Pseudowintera colorata. Leaf.</p>
+        <p>Hot peppery burn, earthy, ginger-peppercorn. The "bushman's painkiller." The active compound polygodial causes pungency at 0.1 micrograms — extraordinarily potent. Better blended than solo. Good in chai-style combinations with kawakawa. Widespread in South Island forests — dominates understory in deer-browsed areas.</p>
+        <p>Caution for pet-nat: polygodial is antifungal against wine yeast (Saccharomyces cerevisiae) and its activity increases at wine pH. Add the tea to base wine before bottling, not during active fermentation.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Koromiko</h3>
+        <p class="herb-list">Veronica stricta. Young leaf tips.</p>
+        <p>Mild, soothing, subtle banana note, astringent like strong black tea. The rongoa cure-all — dried leaves were sent to NZ troops in both World Wars. High tannin content makes it excellent for adding wine structure without imposing strong flavour. Use young tips only. Steep 5-10 minutes. Nelson City Council's native planting guide includes it specifically for the region.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Tataramoa</h3>
+        <p class="herb-list">Rubus cissoides. Leaf, flower, berry.</p>
+        <p>Bush lawyer. Same genus as raspberry and blackberry — the same family as the berries Pinot Noir tastes of. Leaf tea is calming, mild. Flower infusion has a subtle perfumed aroma. Berries (December-April) have an agreeable blackberry-like flavour. The most naturally aligned plant for a Pinot Noir blend. Boil leaves and stalks 15 minutes. Not Threatened status — widespread on all three main islands.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Pikopiko</h3>
+        <p class="herb-list">Asplenium bulbiferum. Young fronds.</p>
+        <p>Not a tea plant — an edible fern. Asparagus, green bean, peppery celery flavour. Only 7 of approximately 200 NZ fern species are edible. Pick at 5-6cm before the koru unfurls. Found in Western Nelson and Sounds-Nelson, recorded up to 660m on Takaka Hill. A cooked infusion rather than a traditional tea — could add a savory, green dimension to wine.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Makomako</h3>
+        <p class="herb-list">Aristotelia serrata. Berry.</p>
+        <p>Wineberry. Early settlers made wine from the berries — hence the name. Fast-growing colonizer of forest clearings. Throughout the South Island in moist lowland-montane forest. Berries are dark red to black, fleshy. Could deepen the colour and berry character of a light red. Seasonal.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Harakeke</h3>
+        <p class="herb-list">Phormium tenax. Flower nectar.</p>
+        <p>NZ flax. The flowers produce large quantities of sweet nectar — Maori collected it in gourds as a sweetener. Flowers December-January. A potential native sugar source for secondary fermentation. Abundant throughout Nelson/Tasman in wetlands and riversides.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Hioi</h3>
+        <p class="herb-list">Mentha cunninghamii. Leaf.</p>
+        <p>Native mint. Clean, sweet, delicate — more subtle than European mint. Prostrate creeping plant. Best as a component in blends for freshness. At Risk — Declining. Do not wild-harvest. Cultivated plants only.</p>
+      </div>
+
+      <h2>Blend Ideas</h2>
+
+      <div class="wine-entry">
+        <h3>Spice and Structure</h3>
+        <p class="herb-list">Horopito leaf + Koromiko tips + Manuka bark</p>
+        <p>Peppery warmth, tannic backbone, earthy depth. More body and a long drying finish to counterpoint the Sauvignon sweetness. Add horopito tea to base wine before bottling.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Berry Kin</h3>
+        <p class="herb-list">Tataramoa leaf + Tataramoa flower + Kawakawa</p>
+        <p>The Rubus family connection to Pinot's berry character, with perfumed floral lift and kawakawa's warm spice. The most natural pairing — botanically related to the flavours already in the wine.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Fresh and Aromatic</h3>
+        <p class="herb-list">Hioi + Kawakawa + Koromiko tips</p>
+        <p>Bright mint lift, pepper warmth, subtle banana. Light and drinkable — the herb character sits alongside the fruit rather than replacing it.</p>
+      </div>
+
+      <div class="wine-entry">
+        <h3>Forest Floor</h3>
+        <p class="herb-list">Manuka wood + Horopito leaf + Pikopiko fronds</p>
+        <p>Deep, earthy, savory. Asparagus-green from pikopiko with manuka's forest floor quality. Plays to Pinot Noir's terroir-driven side.</p>
+      </div>
+
+      <h2>Notes</h2>
+
+      <p>
+        Pinot Noir has lower tannin than other reds. Native plant tannins — especially koromiko, tataramoa, and manuka — compensate for this without heavy extraction. Residual sugar from the Sauvignon Blanc masks astringency, so you can dose slightly higher than in a dry wine. As the wine ferments in bottle and sugar drops, tannin perception increases.
+      </p>
+      <p>
+        Tannins integrate best when added during active fermentation — yeast enzymes modify tannin structures. Add botanical tea to the must during tank fermentation, before bottling. CO2 in pet-nat accentuates bitterness and tannin perception.
+      </p>
+      <p>
+        No NZ winemakers appear to be infusing native botanicals into wine. This is novel territory. Native botanicals are used in Karven Bianco Vermouth (kawakawa, horopito), Ruapehu Brewing's Native Botanical Mead, and Hallertau's NZ Wild Ale with horopito.
+      </p>
+
+      <p class="muted" style="margin-top: 32px;">
+        <a href="research/nz-herbs-wine.html">Full research notes</a>
+      </p>
+
+    </div>
+
+  </body>
+</html>
